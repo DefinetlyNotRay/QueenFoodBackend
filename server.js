@@ -405,7 +405,7 @@ app.post("/createAbsen", async (req, res) => {
 
     // Insert data into absen, and let absen_time default to the current timestamp
     await pool.query(
-      "INSERT INTO absen (id_akun, tanggal_absen,absen_time, pulang_time, detail, id_detail) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO absen (id_akun, tanggal_absen, absen_time, pulang_time, detail, id_detail) VALUES (?,?, ?, ?, ?, ?)",
       [userId, today, new Date(), null, "Hadir", id_detail] // Use null instead of NULL
     );
 
