@@ -392,7 +392,7 @@ app.get("/employee-stats", async (req, res) => {
 
 app.post("/createAbsen", async (req, res) => {
   const { userId, imageUrl, etalaseUrl, location } = req.body;
-  const today = new Date();
+  const today = new Date().toISOString().split("T")[0]; // Get current date in 'YYYY-MM-DD' format
 
   try {
     // Insert data into detail_absen and retrieve the inserted id (id_detail)
