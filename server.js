@@ -10,7 +10,6 @@ const app = express();
 const port = 5000;
 let expo = new Expo();
 
-const express = require("express");
 app.use(bodyparser.json());
 app.use(
   cors({
