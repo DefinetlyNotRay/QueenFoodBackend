@@ -24,6 +24,7 @@ const pool = mysql.createPool({
   user: process.env.MYSQL_NAME,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DB,
+  port: 3306, // Default MySQL port
 });
 
 pool.on("error", (err) => {
