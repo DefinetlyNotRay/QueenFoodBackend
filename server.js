@@ -27,16 +27,16 @@ const pool = mysql.createPool({
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DB,
   port: process.env.MYSQL_PORT || 3306, // Default to 3306 if not defined
+  waitForConnections: true,
 });
 
 pool.on("error", (err) => {
-  console.error("Database error:", err);
+  console.error("Database pool error:", err);
   if (err.code === "PROTOCOL_CONNECTION_LOST") {
     console.log("Reconnecting to the database...");
     pool.getConnection();
   }
 });
-
 const checkAndAddAlphaEntries = async () => {
   try {
     // Get all users
