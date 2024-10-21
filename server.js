@@ -10,6 +10,8 @@ const app = express();
 const port = process.env.PORT || 5000; // Use dynamic port or fallback to 5000 for local dev
 let expo = new Expo();
 
+const secretKey = "adojhsadiujahdjkhaskdhasjdhjk";
+
 app.use(bodyparser.json());
 app.use(
   cors({
@@ -24,7 +26,7 @@ const pool = mysql.createPool({
   user: process.env.MYSQL_NAME,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DB,
-  port: 3306, // Default MySQL port
+  port: process.env.MYSQL_PORT || 3306, // Default to 3306 if not defined
 });
 
 pool.on("error", (err) => {
