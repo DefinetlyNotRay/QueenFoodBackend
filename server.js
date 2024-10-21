@@ -28,13 +28,23 @@ const pool = mysql.createPool({
   database: process.env.MYSQL_DB,
   port: process.env.MYSQL_PORT || 3306, // Default to 3306 if not defined
   waitForConnections: true,
+  connectionLimit: 20, // Adjust depending on your app's load
+  queueLimit: 0, // No limit to the queue size
+  enableKeepAlive: true, // This enables TCP keep-alive to keep connections alive
+  keepAliveInitialDelay: 10000, // Delay before keep-alive starts (10 seconds)
 });
 
 pool.on("error", (err) => {
   console.error("Database pool error:", err);
-  if (err.code === "PROTOCOL_CONNECTION_LOST") {
+  if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNRESET") {
     console.log("Reconnecting to the database...");
-    pool.getConnection();
+    pool.getConnection((err, connection) => {
+      if (err) {
+        console.error("Error reconnecting:", err);
+        return;
+      }
+      connection.release(); // Release the connection back to the pool
+    });
   }
 });
 const checkAndAddAlphaEntries = async () => {
