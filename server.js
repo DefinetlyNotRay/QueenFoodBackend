@@ -13,19 +13,26 @@ let expo = new Expo();
 app.use(bodyparser.json());
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.ALLOWED_ORIGINS || "*", // Use env var for allowed origins
     credentials: true,
   })
 );
 
-const secretKey = "asdhasjdhe2y9813h1ui3"; // Replace with a strong, random key
-
 // Create a connection pool
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_NAME, // Replace with your MySQL username
-  password: process.env.MYSQL_PASSWORD, // Replace with your MySQL password
-  database: process.env.MYSQL_DB, // Replace with your MySQL database name
+  user: process.env.MYSQL_NAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DB,
+  port: 3306, // Default MySQL port
+});
+
+pool.on("error", (err) => {
+  console.error("Database error:", err);
+  if (err.code === "PROTOCOL_CONNECTION_LOST") {
+    console.log("Reconnecting to the database...");
+    pool.getConnection();
+  }
 });
 
 const checkAndAddAlphaEntries = async () => {
