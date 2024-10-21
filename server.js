@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const { Expo } = require("expo-server-sdk");
 require("dotenv").config();
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000; // Use dynamic port or fallback to 5000 for local dev
 let expo = new Expo();
 
 app.use(bodyparser.json());
