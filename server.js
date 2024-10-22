@@ -134,50 +134,28 @@ cron.schedule("0 0 * * *", checkAndAddAlphaEntries); // Runs at 00:00 (midnight)
 
 //   res.status(200).send("Notification sent");
 // });
-// app.post("/expo-push-token", async (req, res) => {
-//   const { userId, expoPushToken } = req.body;
 
-//   console.log("Received userId:", userId);
-//   console.log("Received expoPushToken:", expoPushToken);
+app.post("/storePushToken", async (req, res) => {
+  const { userId, expoPushToken } = req.body;
 
-//   if (!userId || !expoPushToken) {
-//     return res.status(400).send("Missing userId or expoPushToken");
-//   }
+  if (!userId || !expoPushToken) {
+    return res.status(400).json({ message: "User ID and token are required." });
+  }
 
-//   try {
-//     const connection = await pool.getConnection();
-//     try {
-//       // Check for existing token
-//       let [existingToken] = await connection.query(
-//         "SELECT * FROM expo_push_tokens WHERE id_akun = ?",
-//         [userId]
-//       );
-//       console.log("Existing token:", existingToken);
+  try {
+    // Assuming you have a table for storing push tokens
+    await pool.query(
+      "INSERT INTO expo_push_tokens (id_akun, expo_push_token) VALUES (?, ?) ON DUPLICATE KEY UPDATE expo_push_token = ?",
+      [userId, expoPushToken, expoPushToken]
+    );
 
-//       if (existingToken.length > 0) {
-//         // Update existing token
-//         await connection.query(
-//           "UPDATE expo_push_tokens SET expo_push_token = ? WHERE id_akun = ?",
-//           [expoPushToken, userId]
-//         );
-//         console.log("Updated existing token for userId:", userId);
-//       } else {
-//         // Insert new token
-//         await connection.query(
-//           "INSERT INTO expo_push_tokens (id_akun, expo_push_token) VALUES (?, ?)",
-//           [userId, expoPushToken]
-//         );
-//         console.log("Inserted new token for userId:", userId);
-//       }
-//       res.status(200).send("Push token saved successfully.");
-//     } finally {
-//       connection.release();
-//     }
-//   } catch (error) {
-//     console.error("Error saving push token:", error);
-//     res.status(500).send("Internal Server Error");
-//   }
-// });
+    res.status(200).json({ message: "Push token stored successfully." });
+  } catch (error) {
+    console.error("Error storing push token:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+});
+
 
 async function sendPushNotification(expoPushToken, title, body) {
   const message = {
