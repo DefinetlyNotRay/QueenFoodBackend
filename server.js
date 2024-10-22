@@ -102,104 +102,102 @@ const checkAndAddAlphaEntries = async () => {
 // Schedule the job to run every day at midnight
 cron.schedule("0 0 * * *", checkAndAddAlphaEntries); // Runs at 00:00 (midnight)
 
-app.post("/notifyUser", async (req, res) => {
-  const { expoPushToken, status } = req.body; // Get the push token and approval/rejection status
+// app.post("/notifyUser", async (req, res) => {
+//   const { expoPushToken, status } = req.body; // Get the push token and approval/rejection status
 
-  if (!Expo.isExpoPushToken(expoPushToken)) {
-    console.error(`Push token ${expoPushToken} is not a valid Expo push token`);
-    return res.status(400).send("Invalid push token");
-  }
+//   if (!Expo.isExpoPushToken(expoPushToken)) {
+//     console.error(`Push token ${expoPushToken} is not a valid Expo push token`);
+//     return res.status(400).send("Invalid push token");
+//   }
 
-  // Create the message to send
-  const messages = [];
-  messages.push({
+//   // Create the message to send
+//   const messages = [];
+//   messages.push({
+//     to: expoPushToken,
+//     sound: "default",
+//     title: "Permission Request Update",
+//     body: `Your request has been ${status}.`,
+//     data: { withSome: "data" },
+//   });
+
+//   // Send the notification
+//   let chunks = expo.chunkPushNotifications(messages);
+//   let tickets = [];
+//   for (let chunk of chunks) {
+//     try {
+//       let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+//       tickets.push(...ticketChunk);
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   }
+
+//   res.status(200).send("Notification sent");
+// });
+// app.post("/expo-push-token", async (req, res) => {
+//   const { userId, expoPushToken } = req.body;
+
+//   console.log("Received userId:", userId);
+//   console.log("Received expoPushToken:", expoPushToken);
+
+//   if (!userId || !expoPushToken) {
+//     return res.status(400).send("Missing userId or expoPushToken");
+//   }
+
+//   try {
+//     const connection = await pool.getConnection();
+//     try {
+//       // Check for existing token
+//       let [existingToken] = await connection.query(
+//         "SELECT * FROM expo_push_tokens WHERE id_akun = ?",
+//         [userId]
+//       );
+//       console.log("Existing token:", existingToken);
+
+//       if (existingToken.length > 0) {
+//         // Update existing token
+//         await connection.query(
+//           "UPDATE expo_push_tokens SET expo_push_token = ? WHERE id_akun = ?",
+//           [expoPushToken, userId]
+//         );
+//         console.log("Updated existing token for userId:", userId);
+//       } else {
+//         // Insert new token
+//         await connection.query(
+//           "INSERT INTO expo_push_tokens (id_akun, expo_push_token) VALUES (?, ?)",
+//           [userId, expoPushToken]
+//         );
+//         console.log("Inserted new token for userId:", userId);
+//       }
+//       res.status(200).send("Push token saved successfully.");
+//     } finally {
+//       connection.release();
+//     }
+//   } catch (error) {
+//     console.error("Error saving push token:", error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
+
+async function sendPushNotification(expoPushToken, title, body, data) {
+  const message = {
     to: expoPushToken,
     sound: "default",
-    title: "Permission Request Update",
-    body: `Your request has been ${status}.`,
-    data: { withSome: "data" },
-  });
+    title: title,
+    body: body,
+    data: data,
+  };
 
-  // Send the notification
-  let chunks = expo.chunkPushNotifications(messages);
-  let tickets = [];
-  for (let chunk of chunks) {
-    try {
-      let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-      tickets.push(...ticketChunk);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  res.status(200).send("Notification sent");
-});
-app.post("/expo-push-token", async (req, res) => {
-  const { userId, expoPushToken } = req.body;
-
-  console.log("Received userId:", userId);
-  console.log("Received expoPushToken:", expoPushToken);
-
-  if (!userId || !expoPushToken) {
-    return res.status(400).send("Missing userId or expoPushToken");
-  }
-
-  try {
-    const connection = await pool.getConnection();
-    try {
-      // Check for existing token
-      let [existingToken] = await connection.query(
-        "SELECT * FROM expo_push_tokens WHERE id_akun = ?",
-        [userId]
-      );
-      console.log("Existing token:", existingToken);
-
-      if (existingToken.length > 0) {
-        // Update existing token
-        await connection.query(
-          "UPDATE expo_push_tokens SET expo_push_token = ? WHERE id_akun = ?",
-          [expoPushToken, userId]
-        );
-        console.log("Updated existing token for userId:", userId);
-      } else {
-        // Insert new token
-        await connection.query(
-          "INSERT INTO expo_push_tokens (id_akun, expo_push_token) VALUES (?, ?)",
-          [userId, expoPushToken]
-        );
-        console.log("Inserted new token for userId:", userId);
-      }
-      res.status(200).send("Push token saved successfully.");
-    } finally {
-      connection.release();
-    }
-  } catch (error) {
-    console.error("Error saving push token:", error);
-    res.status(500).send("Internal Server Error");
-  }
-});
-
-// Utility function for sending notifications
-const sendNotification = async (expoPushToken, title, body, data) => {
-  const messages = [
-    {
-      to: expoPushToken,
-      sound: "default",
-      title,
-      body,
-      data,
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
     },
-  ];
-
-  let chunks = expo.chunkPushNotifications(messages);
-  let tickets = [];
-  for (let chunk of chunks) {
-    let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-    tickets.push(...ticketChunk);
-  }
-
-  console.log("Notification sent:", tickets);
-};
+    body: JSON.stringify(message),
+  });
+}
 
 app.post("/accept-status/", async (req, res) => {
   const { id_izin, id_akun, today, value } = req.body;
@@ -239,7 +237,7 @@ app.post("/accept-status/", async (req, res) => {
       }
 
       const expoPushToken = rows[0].expo_push_token;
-      await sendNotification(
+      await sendPushNotification(
         expoPushToken,
         `Permission Request`,
         `Your permission request has been Approved!`,
@@ -283,7 +281,7 @@ app.post("/reject-status/", async (req, res) => {
       }
 
       const expoPushToken = rows[0].expo_push_token;
-      await sendNotification(
+      await sendPushNotification(
         expoPushToken,
         `Permission Request`,
         `Your permission request has been Rejected!`,
@@ -617,7 +615,7 @@ app.post("/uploadIzin", async (req, res) => {
     const expoPushToken = rows[0].expo_push_token;
 
     // Send notification to admin
-    await sendNotification(
+    await sendPushNotification(
       expoPushToken,
       `Permission Request`,
       `A user has requested permission`
