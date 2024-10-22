@@ -531,7 +531,7 @@ app.get("/table-izin-karyawan/:userId", async (req, res) => {
 app.get("/table-izin-admin", async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT i.id_izin, u.nama_karyawan, i.tanggal_izin, i.alasan,i.tipe,i.status ` +
+      `SELECT i.id_izin,u.id_akun, u.nama_karyawan, i.tanggal_izin, i.alasan,i.tipe,i.status ` +
         "FROM izin i " +
         "JOIN user u ON i.id_akun = u.id_akun " +
         ` ORDER BY id_izin DESC`
