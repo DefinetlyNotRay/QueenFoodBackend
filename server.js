@@ -179,25 +179,37 @@ cron.schedule("0 0 * * *", checkAndAddAlphaEntries); // Runs at 00:00 (midnight)
 //   }
 // });
 
-async function sendPushNotification(expoPushToken, title, body, data) {
+async function sendPushNotification(expoPushToken, title, body) {
   const message = {
     to: expoPushToken,
     sound: "default",
     title: title,
     body: body,
-    data: data,
+    data: { someData: "goes here" },
   };
 
-  await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Accept-encoding": "gzip, deflate",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(message),
-  });
+  try {
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("Error sending notification:", data);
+    } else {
+      console.log("Notification sent successfully:", data);
+    }
+  } catch (error) {
+    console.error("Error sending notification:", error);
+  }
 }
+
 
 app.post("/accept-status/", async (req, res) => {
   const { id_izin, id_akun, today, value } = req.body;
