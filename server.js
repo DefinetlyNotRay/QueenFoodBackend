@@ -374,7 +374,10 @@ app.post("/login", async (req, res) => {
         message: "Login Successful",
       });
     } else {
-      res.json({ success: false, message: "Invalid username or password" });
+      res.json({
+        success: false,
+        message: "Invalid username or password (case-sensitive)",
+      });
     }
   } catch (err) {
     console.error("Database Error:", err);
