@@ -47,6 +47,12 @@ pool.on("error", (err) => {
     });
   }
 });
+
+app.get("/auto-alpha", async (req, res) => {
+  await checkAndAddAlphaEntries();
+  res.send("Done");
+});
+
 const checkAndAddAlphaEntries = async () => {
   try {
     // Get all users
@@ -57,8 +63,10 @@ const checkAndAddAlphaEntries = async () => {
 
     const today = new Date();
     const yesterday = new Date();
+
     yesterday.setDate(today.getDate() - 1);
     const yesterdayDateString = yesterday.toISOString().split("T")[0];
+    yesterday.setHours(11, 59, 0, 0);
 
     for (const user of users) {
       const { id_akun } = user;
@@ -84,8 +92,8 @@ const checkAndAddAlphaEntries = async () => {
         console.log("Inserted detail ID:", id_detail);
 
         await pool.query(
-          'INSERT INTO absen (id_akun, tanggal_absen, absen_time, pulang_time, detail, id_detail) VALUES (?, ?, NULL, NULL, "Alpha", ?)',
-          [id_akun, yesterdayDateString, id_detail]
+          'INSERT INTO absen (id_akun, tanggal_absen, absen_time, pulang_time, detail, id_detail) VALUES (?, ?, ?, ?, "Alpha", ?)',
+          [id_akun, yesterdayDateString, yesterday, yesterday, id_detail]
         );
         console.log(
           `Alpha entry added for user ${id_akun} on ${yesterdayDateString}`
@@ -98,9 +106,6 @@ const checkAndAddAlphaEntries = async () => {
     console.error("Error checking and adding Alpha entries:", error);
   }
 };
-
-// Schedule the job to run every day at midnight
-cron.schedule("0 0 * * *", checkAndAddAlphaEntries); // Runs at 00:00 (midnight)
 
 // app.post("/notifyUser", async (req, res) => {
 //   const { expoPushToken, status } = req.body; // Get the push token and approval/rejection status
@@ -353,26 +358,34 @@ app.post("/login", async (req, res) => {
     "x-access-token, Origin, X-Requested-With, Content-Type, Accept"
   );
 
-  const query = "SELECT * FROM user WHERE username = ? AND password = ?";
+  const query = "SELECT * FROM user WHERE username = ?";
 
   try {
-    const [results] = await pool.query(query, [username, password]);
+    const [results] = await pool.query(query, [username]);
 
     if (results.length > 0) {
-      const user = results[0]; // Extract the first result as the user object
-      console.log(user.level);
-      const token = jwt.sign(
-        { userId: user.id_akun, username: user.username, level: user.level },
-        secretKey,
-        { expiresIn: "100h" }
-      );
-      res.json({
-        success: true,
-        token,
-        userId: user.id_akun,
-        level: user.level,
-        message: "Login Successful",
-      });
+      const user = results[0];
+
+      // Manually check password for exact match
+      if (user.password === password) {
+        const token = jwt.sign(
+          { userId: user.id_akun, username: user.username, level: user.level },
+          secretKey,
+          { expiresIn: "100h" }
+        );
+        res.json({
+          success: true,
+          token,
+          userId: user.id_akun,
+          level: user.level,
+          message: "Login Successful",
+        });
+      } else {
+        res.json({
+          success: false,
+          message: "Invalid username or password (case-sensitive)",
+        });
+      }
     } else {
       res.json({
         success: false,
