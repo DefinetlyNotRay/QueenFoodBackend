@@ -229,7 +229,7 @@ app.post("/accept-status/", async (req, res) => {
       const id_detail = detailResult.insertId;
 
       await pool.query(
-        "INSERT INTO absen (id_akun, tanggal_absen, detail, pulang_time, id_detail) VALUES (?, ,?,?, ?, ?)",
+        "INSERT INTO absen (id_akun, tanggal_absen, detail, pulang_time, id_detail) VALUES (?,? ,?,?, ?)",
         [id_akun, today, sakitSomething[0]?.tipe, new Date(), id_detail]
       );
 
