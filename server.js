@@ -139,50 +139,50 @@ const checkAndAddAlphaEntries = async () => {
 
 //   res.status(200).send("Notification sent");
 // });
-// app.post("/expo-push-token", async (req, res) => {
-//   const { userId, expoPushToken } = req.body;
+app.post("/storePushToken", async (req, res) => {
+  const { userId, expoPushToken } = req.body;
 
-//   console.log("Received userId:", userId);
-//   console.log("Received expoPushToken:", expoPushToken);
+  console.log("Received userId:", userId);
+  console.log("Received expoPushToken:", expoPushToken);
 
-//   if (!userId || !expoPushToken) {
-//     return res.status(400).send("Missing userId or expoPushToken");
-//   }
+  if (!userId || !expoPushToken) {
+    return res.status(400).send("Missing userId or expoPushToken");
+  }
 
-//   try {
-//     const connection = await pool.getConnection();
-//     try {
-//       // Check for existing token
-//       let [existingToken] = await connection.query(
-//         "SELECT * FROM expo_push_tokens WHERE id_akun = ?",
-//         [userId]
-//       );
-//       console.log("Existing token:", existingToken);
+  try {
+    const connection = await pool.getConnection();
+    try {
+      // Check for existing token
+      let [existingToken] = await connection.query(
+        "SELECT * FROM expo_push_tokens WHERE id_akun = ?",
+        [userId]
+      );
+      console.log("Existing token:", existingToken);
 
-//       if (existingToken.length > 0) {
-//         // Update existing token
-//         await connection.query(
-//           "UPDATE expo_push_tokens SET expo_push_token = ? WHERE id_akun = ?",
-//           [expoPushToken, userId]
-//         );
-//         console.log("Updated existing token for userId:", userId);
-//       } else {
-//         // Insert new token
-//         await connection.query(
-//           "INSERT INTO expo_push_tokens (id_akun, expo_push_token) VALUES (?, ?)",
-//           [userId, expoPushToken]
-//         );
-//         console.log("Inserted new token for userId:", userId);
-//       }
-//       res.status(200).send("Push token saved successfully.");
-//     } finally {
-//       connection.release();
-//     }
-//   } catch (error) {
-//     console.error("Error saving push token:", error);
-//     res.status(500).send("Internal Server Error");
-//   }
-// });
+      if (existingToken.length > 0) {
+        // Update existing token
+        await connection.query(
+          "UPDATE expo_push_tokens SET expo_push_token = ? WHERE id_akun = ?",
+          [expoPushToken, userId]
+        );
+        console.log("Updated existing token for userId:", userId);
+      } else {
+        // Insert new token
+        await connection.query(
+          "INSERT INTO expo_push_tokens (id_akun, expo_push_token) VALUES (?, ?)",
+          [userId, expoPushToken]
+        );
+        console.log("Inserted new token for userId:", userId);
+      }
+      res.status(200).send("Push token saved successfully.");
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Error saving push token:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 async function sendPushNotification(expoPushToken, title, body, data) {
   const message = {
