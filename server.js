@@ -708,7 +708,7 @@ app.get("/checkIzin", async (req, res) => {
   try {
     // Corrected query to check for 'Izin' or 'izin' in the detail field
     const [rows] = await pool.query(
-      "SELECT COUNT(*) AS count FROM absen WHERE id_akun = ? AND tanggal_absen = ? AND (detail = 'Sakit' OR detail = 'Izin' OR detail = 'Pending')",
+      "SELECT COUNT(*) AS count FROM izin WHERE id_akun = ? AND tanggal_absen = ? AND (tipe = 'Sakit' OR tipe = 'Izin' OR tipe = 'Pending')",
       [userId, date]
     );
 
