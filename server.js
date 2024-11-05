@@ -704,7 +704,7 @@ app.get("/checkIzin", async (req, res) => {
   if (!userId || !date) {
     return res.status(400).json({ message: "User ID and date are required." });
   }
-
+  // test
   try {
     // Corrected query to check for 'Izin' or 'izin' in the detail field
     const [rows] = await pool.query(
