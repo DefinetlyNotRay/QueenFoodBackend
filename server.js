@@ -222,12 +222,15 @@ app.post("/accept-status/", async (req, res) => {
         "INSERT INTO detail_absen (id_akun, foto_diri, foto_etalase, lokasi, id_izin) VALUES (?, ?, ?, ?, ?)",
         [id_akun, null, null, null, id_izin]
       );
-
+      const [sakitSomething] = await pool.query(
+        "SELECT i.id_izin, i.id_akun, i.tanggal_izin, i.alasan, i.tipe, i.status FROM izin i WHERE id_akun = ? ORDER BY i.tanggal_izin DESC LIMIT 1",
+        [id_akun]
+      );
       const id_detail = detailResult.insertId;
 
       await pool.query(
         "INSERT INTO absen (id_akun, tanggal_absen, detail, id_detail) VALUES (?, ?, ?, ?)",
-        [id_akun, today, value, id_detail]
+        [id_akun, today, sakitSomething[0]?.tipe, id_detail]
       );
 
       console.log(`Status updated to "Approved" for id_izin: ${id_izin}`);
