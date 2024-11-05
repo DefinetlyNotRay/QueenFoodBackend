@@ -229,8 +229,8 @@ app.post("/accept-status/", async (req, res) => {
       const id_detail = detailResult.insertId;
 
       await pool.query(
-        "INSERT INTO absen (id_akun, tanggal_absen, detail, id_detail) VALUES (?, ?, ?, ?)",
-        [id_akun, today, sakitSomething[0]?.tipe, id_detail]
+        "INSERT INTO absen (id_akun, tanggal_absen, detail, pulang_time, id_detail) VALUES (?, ,?,?, ?, ?)",
+        [id_akun, today, sakitSomething[0]?.tipe, new Date(), id_detail]
       );
 
       console.log(`Status updated to "Approved" for id_izin: ${id_izin}`);
