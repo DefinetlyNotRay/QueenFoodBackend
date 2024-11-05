@@ -704,11 +704,11 @@ app.get("/checkIzin", async (req, res) => {
   if (!userId || !date) {
     return res.status(400).json({ message: "User ID and date are required." });
   }
-  // test
+
   try {
     // Corrected query to check for 'Izin' or 'izin' in the detail field
     const [rows] = await pool.query(
-      "SELECT COUNT(*) AS count FROM izin WHERE id_akun = ? AND tanggal_absen = ? AND (tipe = 'Sakit' OR tipe = 'Izin' OR tipe = 'Pending')",
+      "SELECT COUNT(*) AS count FROM absen WHERE id_akun = ? AND tanggal_absen = ? AND (detail = 'Sakit' OR detail = 'Izin')",
       [userId, date]
     );
 
