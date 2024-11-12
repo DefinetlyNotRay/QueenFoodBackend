@@ -341,12 +341,15 @@ app.get("/table-absen", async (req, res) => {
   }
 });
 app.get("/table-izin", async (req, res) => {
+  const currentDate = new Date().toISOString().slice(0, 10); // Get today's date in yyyy-mm-dd format
+
   try {
-    const [rows] = await pool.query(
-      "SELECT i.id_izin,i.id_akun, u.nama_karyawan, i.tanggal_izin,i.tipe, i.alasan " +
+   const [rows] = await pool.query(
+      "SELECT i.id_izin, i.id_akun, u.nama_karyawan, i.tanggal_izin, i.tipe, i.alasan " +
         "FROM izin i " +
         "JOIN user u ON i.id_akun = u.id_akun " +
-        'WHERE DATE(i.tanggal_izin) = CURDATE() AND i.status = "Pending"'
+        "WHERE DATE(i.tanggal_izin) = ? AND i.status = 'Pending'", // Use placeholder for date
+      [currentDate] // Pass currentDate as parameter
     );
     res.json(rows);
   } catch (error) {
