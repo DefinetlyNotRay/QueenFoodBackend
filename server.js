@@ -184,24 +184,46 @@ app.post("/storePushToken", async (req, res) => {
   }
 });
 
-async function sendPushNotification(expoPushToken, title, body, data) {
+async function sendPushNotification(pushToken, title, body, data) {
+  const isFCMToken = pushToken.includes(":");
+
   const message = {
-    to: expoPushToken,
+    to: pushToken,
     sound: "default",
     title: title,
     body: body,
     data: data,
   };
 
-  await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Accept-encoding": "gzip, deflate",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(message),
-  });
+  if (isFCMToken) {
+    // Send via FCM
+    await fetch("https://fcm.googleapis.com/fcm/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `key=YOUR_FCM_SERVER_KEY`, // Use your FCM server key
+      },
+      body: JSON.stringify({
+        to: pushToken,
+        notification: {
+          title: title,
+          body: body,
+          sound: "default",
+        },
+        data: data,
+      }),
+    });
+  } else {
+    // Send via Expo Push Service
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    });
+  }
 }
 
 app.post("/accept-status/", async (req, res) => {
