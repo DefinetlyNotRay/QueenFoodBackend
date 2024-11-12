@@ -200,6 +200,7 @@ async function sendPushNotification(devicePushToken, title, body, data) {
     notification: {
       title: title,
       body: body,
+      icon: "https://res.cloudinary.com/dezla8wit/image/upload/f_auto,q_auto/tdouvp4asinwv0k6s5sj",
     },
     data: data,
   };
