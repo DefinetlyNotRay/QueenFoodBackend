@@ -263,8 +263,7 @@ app.post("/accept-status/", async (req, res) => {
       await sendPushNotification(
         expoPushToken,
         `Permission Request`,
-        `Your permission request has been Approved!`,
-        { id_izin }
+        `Your permission request has been Approved!`
       );
       return res
         .status(200)
@@ -307,8 +306,7 @@ app.post("/reject-status/", async (req, res) => {
       await sendPushNotification(
         expoPushToken,
         `Permission Request`,
-        `Your permission request has been Rejected!`,
-        { id_izin }
+        `Your permission request has been Rejected!`
       );
       return res
         .status(200)
