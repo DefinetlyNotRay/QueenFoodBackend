@@ -415,7 +415,7 @@ app.get("/employee-stats", async (req, res) => {
   const attendedTodayQuery =
     'SELECT COUNT(*) AS attendedToday FROM absen WHERE tanggal_absen = ? AND detail = "Hadir"';
   const izinTodayQuery =
-    "SELECT COUNT(*) AS izinToday FROM izin WHERE tanggal_izin = ?";
+    'SELECT COUNT(*) AS izinToday FROM izin WHERE tanggal_izin = ? AND status = "Approved"';
 
   try {
     const [totalEmployees] = await pool.query(totalEmployeesQuery);
