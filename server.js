@@ -9,7 +9,8 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000; // Use dynamic port or fallback to 5000 for local dev
 let expo = new Expo();
-
+var admin = require("firebase-admin");
+const base64ServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
 const secretKey = "adojhsadiujahdjkhaskdhasjdhjk";
 
 app.use(bodyparser.json());
@@ -19,7 +20,16 @@ app.use(
     credentials: true,
   })
 );
+if (!base64ServiceAccount) {
+  throw new Error("Firebase service account not set in environment variables");
+}
+const serviceAccountJson = JSON.parse(
+  Buffer.from(base64ServiceAccount, "base64").toString("utf-8")
+);
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountJson),
+});
 // Create a connection pool
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST,
@@ -184,26 +194,23 @@ app.post("/storePushToken", async (req, res) => {
   }
 });
 
-async function sendPushNotification(expoPushToken, title, body, data) {
+async function sendPushNotification(devicePushToken, title, body, data) {
   const message = {
-    to: expoPushToken,
-    sound: "default",
-    title: title,
-    body: body,
+    token: devicePushToken,
+    notification: {
+      title: title,
+      body: body,
+    },
     data: data,
   };
 
-  await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Accept-encoding": "gzip, deflate",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(message),
-  });
+  try {
+    await admin.messaging().send(message);
+    console.log("Push notification sent successfully!");
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+  }
 }
-
 
 app.post("/accept-status/", async (req, res) => {
   const { id_izin, id_akun, today, value } = req.body;
@@ -345,7 +352,7 @@ app.get("/table-izin", async (req, res) => {
   const currentDate = new Date().toISOString().slice(0, 10); // Get today's date in yyyy-mm-dd format
 
   try {
-   const [rows] = await pool.query(
+    const [rows] = await pool.query(
       "SELECT i.id_izin, i.id_akun, u.nama_karyawan, i.tanggal_izin, i.tipe, i.alasan " +
         "FROM izin i " +
         "JOIN user u ON i.id_akun = u.id_akun " +
