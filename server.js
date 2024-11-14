@@ -666,6 +666,8 @@ app.post("/uploadIzin", async (req, res) => {
 
 app.delete("/deleteSales", async (req, res) => {
   const { userId } = req.query;
+console.log("Received userId:", userId);
+
   try {
     // Delete data from user table
     await pool.query("DELETE FROM user WHERE id_akun = ?", [userId]);
